@@ -73,14 +73,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func anchorPoint(on screen: NSScreen) -> CGPoint {
-        let barThickness = NSStatusBar.system.thickness
-        let anchorY = screen.frame.height - barThickness / 2
-
         if let button = statusItem.button, let win = button.window {
-            let frameInScreen = win.convertToScreen(button.frame)
+            let boundsInWindow = button.convert(button.bounds, to: nil)
+            let frameInScreen = win.convertToScreen(boundsInWindow)
             let anchorX = frameInScreen.midX - screen.frame.minX
+            let anchorY = frameInScreen.midY - screen.frame.minY
             return CGPoint(x: anchorX, y: anchorY)
         }
-        return CGPoint(x: screen.frame.width / 2, y: anchorY)
+        let barThickness = NSStatusBar.system.thickness
+        return CGPoint(x: screen.frame.width / 2, y: screen.frame.height - barThickness / 2)
     }
 }
