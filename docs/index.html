@@ -158,6 +158,35 @@
 
     footer a { color: var(--accent-light); }
     footer a:hover { text-decoration: underline; }
+
+    kbd {
+      display: inline-block;
+      background: #252529;
+      border: 1px solid #3a3a42;
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Mono", monospace;
+      font-size: 0.85em;
+      color: var(--text);
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .shortcuts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .shortcut-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -167,6 +196,7 @@
     <h1>Your menu bar has a <span>fidget toy</span> now.</h1>
     <p>A physics-simulated ball hangs from your status bar on a rope. Drag it, throw it, watch it bounce. Idle hands, meet dopamine.</p>
 
+    <p class="req" style="margin-bottom:20px;font-size:0.85rem;">Toggle with <kbd>⌘G</kbd> &nbsp;·&nbsp; Reset with <kbd>⌘H</kbd></p>
     <a class="cta" href="https://github.com/fredybotas/adhd-fidget/releases/download/latest/FidgetBall.dmg">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 15V3m0 12-4-4m4 4 4-4"/><rect x="3" y="17" width="18" height="4" rx="2"/>
@@ -185,6 +215,16 @@
     <div class="grid">
 
       <div class="card">
+        <div class="card-icon">⌨️</div>
+        <h3>Global Hotkeys</h3>
+        <p>Control the ball from anywhere — no Accessibility permission required.</p>
+        <div class="shortcuts">
+          <div class="shortcut-row"><kbd>⌘G</kbd> Show / Hide</div>
+          <div class="shortcut-row"><kbd>⌘H</kbd> Reset ball to rope</div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-icon">🧵</div>
         <h3>Rope Physics</h3>
         <p>Verlet-integrated particle chain gives the rope a natural, satisfying feel as the ball swings and settles.</p>
@@ -194,18 +234,6 @@
         <div class="card-icon">🎳</div>
         <h3>Throw &amp; Bounce</h3>
         <p>Flick the ball fast enough to snap the rope. It goes full free-ball mode and bounces off every screen edge.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🖱️</div>
-        <h3>Click-Through</h3>
-        <p>The overlay never steals your clicks. Interact with your desktop and other apps like the ball isn't there.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">⌨️</div>
-        <h3>Global Hotkey</h3>
-        <p>Show or hide the ball with a system-wide shortcut. No Accessibility permission required.</p>
       </div>
 
       <div class="card">

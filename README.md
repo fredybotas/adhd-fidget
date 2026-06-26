@@ -8,8 +8,7 @@ macOS status bar fidget toy for ADHD focus. A physics-simulated ball hangs from 
 
 - Pendulum ball on a Verlet-integrated particle rope anchored to the status bar
 - Throw the ball to snap the rope — free-ball mode with screen-edge bouncing
-- Click-through overlay: the window never intercepts your mouse outside the ball
-- Global hotkey to show/hide (no Accessibility permission needed)
+- Global hotkeys: **⌘G** show/hide, **⌘H** reset ball (no Accessibility permission needed; customizable in Settings)
 - Settings: rope length, gravity, damping, ball size, color, break threshold
 
 ## Requirements
