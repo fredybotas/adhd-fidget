@@ -16,9 +16,7 @@ final class BallView: NSView {
 
     // MARK: - Fixed constants
 
-    private let iters       = 10
-    private let breakSpeed: CGFloat = 1600
-    private let breakRatio: CGFloat = 1.52
+    private let iters = 10
     var anchor: CGPoint
     var anchorProvider: (() -> CGPoint)?
 
@@ -123,7 +121,8 @@ final class BallView: NSView {
         let dy = parts[j].pos.y - parts[i].pos.y
         let d  = hypot(dx, dy)
         guard d > 0 else { return }
-        let corr = (d - segLen) / d
+        let e = BallSettings.shared.ropeElasticity
+        let corr = (d - segLen) / d * e
         let iFixed = parts[i].pinned
         let jFixed = parts[j].pinned || (dragging && j == parts.count - 1)
         switch (iFixed, jFixed) {
@@ -323,7 +322,9 @@ final class BallView: NSView {
         dragSamples.append((p, CACurrentMediaTime()))
         if dragSamples.count > 8 { dragSamples.removeFirst() }
 
-        if hypot(p.x - anchor.x, p.y - anchor.y) > BallSettings.shared.ropeLength * breakRatio {
+        let s = BallSettings.shared
+        let effectiveRatio = s.breakRatio / s.ropeElasticity
+        if hypot(p.x - anchor.x, p.y - anchor.y) > s.ropeLength * effectiveRatio {
             snapRope(vel: recentVelocity(), at: p)
         }
         needsDisplay = true
@@ -340,7 +341,7 @@ final class BallView: NSView {
         guard dragging else { return }
         dragging = false
         let vel = recentVelocity()
-        if hypot(vel.x, vel.y) > breakSpeed {
+        if hypot(vel.x, vel.y) > BallSettings.shared.breakSpeed {
             snapRope(vel: vel, at: parts.last!.pos)
         } else {
             let dtF: CGFloat = 1.0 / 60.0

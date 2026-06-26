@@ -60,6 +60,21 @@ final class BallSettings {
         set { ud.set(Double(newValue), forKey: "ropeLength"); post() }
     }
 
+    var ropeElasticity: CGFloat {
+        get { ud.optDouble("ropeElasticity").map { CGFloat($0) } ?? 0.35 }
+        set { ud.set(Double(newValue), forKey: "ropeElasticity"); post() }
+    }
+
+    var breakSpeed: CGFloat {
+        get { ud.optDouble("breakSpeed").map { CGFloat($0) } ?? 4000 }
+        set { ud.set(Double(newValue), forKey: "breakSpeed"); post() }
+    }
+
+    var breakRatio: CGFloat {
+        get { ud.optDouble("breakRatio").map { CGFloat($0) } ?? 3.0 }
+        set { ud.set(Double(newValue), forKey: "breakRatio"); post() }
+    }
+
     var segCount: Int {
         get { ud.object(forKey: "segCount") == nil ? 16 : ud.integer(forKey: "segCount") }
         set { ud.set(newValue, forKey: "segCount"); post() }
@@ -97,7 +112,7 @@ final class BallSettings {
 
     func reset() {
         ["ballRadius", "ballColor", "ropeColor", "ropeThickness",
-         "gravity", "damping", "bounceE", "floorFric", "ropeLength", "segCount",
+         "gravity", "damping", "bounceE", "floorFric", "ropeLength", "ropeElasticity", "breakSpeed", "breakRatio", "segCount",
          "showKeyCode", "showModifiers", "showLabel",
          "resetKeyCode", "resetModifiers", "resetLabel"]
             .forEach { ud.removeObject(forKey: $0) }

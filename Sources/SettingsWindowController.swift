@@ -7,7 +7,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     private init() {
         let w = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 440, height: 580),
+            contentRect: NSRect(x: 0, y: 0, width: 440, height: 670),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -62,7 +62,10 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         allRows.append((sliderRow("Bounce",       min: 0.05, max: 1.0, value: Double(s.bounceE),      format: "%.2f")    { BallSettings.shared.bounceE       = CGFloat($0) }, 4))
         allRows.append((sliderRow("Floor Friction",min: 0.1, max: 1.0, value: Double(s.floorFric),    format: "%.2f")    { BallSettings.shared.floorFric     = CGFloat($0) }, 4))
         allRows.append((sliderRow("Rope Length",  min: 60, max: 500,  value: Double(s.ropeLength),    format: "%.0f px") { BallSettings.shared.ropeLength    = CGFloat($0) }, 4))
-        allRows.append((sliderRow("Segments",     min: 4,  max: 32,   value: Double(s.segCount), integer: true, format: "%.0f") { BallSettings.shared.segCount = Int($0) }, 4))
+        allRows.append((sliderRow("Elasticity",   min: 0.05, max: 1.0,   value: Double(s.ropeElasticity), format: "%.2f")    { BallSettings.shared.ropeElasticity = CGFloat($0) }, 4))
+        allRows.append((sliderRow("Break Speed",  min: 400, max: 10000, value: Double(s.breakSpeed),     format: "%.0f")    { BallSettings.shared.breakSpeed     = CGFloat($0) }, 4))
+        allRows.append((sliderRow("Stretch Limit",min: 1.1, max: 6.0,   value: Double(s.breakRatio),     format: "%.1f×")   { BallSettings.shared.breakRatio     = CGFloat($0) }, 4))
+        allRows.append((sliderRow("Segments",     min: 4,  max: 32,     value: Double(s.segCount), integer: true, format: "%.0f") { BallSettings.shared.segCount = Int($0) }, 4))
 
         allRows.append((header("SHORTCUTS"), 18))
         allRows.append((shortcutRow("Show / Hide",
