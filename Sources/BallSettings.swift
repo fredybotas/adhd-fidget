@@ -14,7 +14,7 @@ final class BallSettings {
     // MARK: - Visual
 
     var ballRadius: CGFloat {
-        get { ud.optDouble("ballRadius").map { CGFloat($0) } ?? 28 }
+        get { ud.optDouble("ballRadius").map { CGFloat($0) } ?? 32 }
         set { ud.set(Double(newValue), forKey: "ballRadius"); post() }
     }
 
@@ -36,47 +36,47 @@ final class BallSettings {
     // MARK: - Physics
 
     var gravity: CGFloat {
-        get { ud.optDouble("gravity").map { CGFloat($0) } ?? 700 }
+        get { ud.optDouble("gravity").map { CGFloat($0) } ?? 1200 }
         set { ud.set(Double(newValue), forKey: "gravity"); post() }
     }
 
     var damping: CGFloat {
-        get { ud.optDouble("damping").map { CGFloat($0) } ?? 0.9994 }
+        get { ud.optDouble("damping").map { CGFloat($0) } ?? 0.9997 }
         set { ud.set(Double(newValue), forKey: "damping"); post() }
     }
 
     var bounceE: CGFloat {
-        get { ud.optDouble("bounceE").map { CGFloat($0) } ?? 0.65 }
+        get { ud.optDouble("bounceE").map { CGFloat($0) } ?? 0.82 }
         set { ud.set(Double(newValue), forKey: "bounceE"); post() }
     }
 
     var floorFric: CGFloat {
-        get { ud.optDouble("floorFric").map { CGFloat($0) } ?? 0.80 }
+        get { ud.optDouble("floorFric").map { CGFloat($0) } ?? 0.85 }
         set { ud.set(Double(newValue), forKey: "floorFric"); post() }
     }
 
     var ropeLength: CGFloat {
-        get { ud.optDouble("ropeLength").map { CGFloat($0) } ?? 220 }
+        get { ud.optDouble("ropeLength").map { CGFloat($0) } ?? 180 }
         set { ud.set(Double(newValue), forKey: "ropeLength"); post() }
     }
 
     var ropeElasticity: CGFloat {
-        get { ud.optDouble("ropeElasticity").map { CGFloat($0) } ?? 0.35 }
+        get { ud.optDouble("ropeElasticity").map { CGFloat($0) } ?? 0.80 }
         set { ud.set(Double(newValue), forKey: "ropeElasticity"); post() }
     }
 
     var breakSpeed: CGFloat {
-        get { ud.optDouble("breakSpeed").map { CGFloat($0) } ?? 4000 }
+        get { ud.optDouble("breakSpeed").map { CGFloat($0) } ?? 6000 }
         set { ud.set(Double(newValue), forKey: "breakSpeed"); post() }
     }
 
     var breakRatio: CGFloat {
-        get { ud.optDouble("breakRatio").map { CGFloat($0) } ?? 3.0 }
+        get { ud.optDouble("breakRatio").map { CGFloat($0) } ?? 5.0 }
         set { ud.set(Double(newValue), forKey: "breakRatio"); post() }
     }
 
     var segCount: Int {
-        get { ud.object(forKey: "segCount") == nil ? 16 : ud.integer(forKey: "segCount") }
+        get { ud.object(forKey: "segCount") == nil ? 12 : ud.integer(forKey: "segCount") }
         set { ud.set(newValue, forKey: "segCount"); post() }
     }
 
@@ -90,28 +90,28 @@ final class BallSettings {
     // MARK: - Shortcuts
 
     var showKeyCode: Int {
-        get { ud.object(forKey: "showKeyCode") == nil ? -1 : ud.integer(forKey: "showKeyCode") }
+        get { ud.object(forKey: "showKeyCode") == nil ? 5 : ud.integer(forKey: "showKeyCode") }
         set { ud.set(newValue, forKey: "showKeyCode"); post() }
     }
     var showModifiers: NSEvent.ModifierFlags {
-        get { NSEvent.ModifierFlags(rawValue: UInt(ud.integer(forKey: "showModifiers"))) }
+        get { ud.object(forKey: "showModifiers") == nil ? .command : NSEvent.ModifierFlags(rawValue: UInt(ud.integer(forKey: "showModifiers"))) }
         set { ud.set(Int(newValue.rawValue), forKey: "showModifiers"); post() }
     }
     var showLabel: String {
-        get { ud.string(forKey: "showLabel") ?? "" }
+        get { ud.string(forKey: "showLabel") ?? "⌘G" }
         set { ud.set(newValue, forKey: "showLabel"); post() }
     }
 
     var resetKeyCode: Int {
-        get { ud.object(forKey: "resetKeyCode") == nil ? -1 : ud.integer(forKey: "resetKeyCode") }
+        get { ud.object(forKey: "resetKeyCode") == nil ? 4 : ud.integer(forKey: "resetKeyCode") }
         set { ud.set(newValue, forKey: "resetKeyCode"); post() }
     }
     var resetModifiers: NSEvent.ModifierFlags {
-        get { NSEvent.ModifierFlags(rawValue: UInt(ud.integer(forKey: "resetModifiers"))) }
+        get { ud.object(forKey: "resetModifiers") == nil ? .command : NSEvent.ModifierFlags(rawValue: UInt(ud.integer(forKey: "resetModifiers"))) }
         set { ud.set(Int(newValue.rawValue), forKey: "resetModifiers"); post() }
     }
     var resetLabel: String {
-        get { ud.string(forKey: "resetLabel") ?? "" }
+        get { ud.string(forKey: "resetLabel") ?? "⌘H" }
         set { ud.set(newValue, forKey: "resetLabel"); post() }
     }
 
