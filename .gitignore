@@ -2,3 +2,6 @@
 *.app/
 *.o
 *.d
+*.zip
+*.dmg
+codesign.env
