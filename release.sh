@@ -95,49 +95,35 @@ rm -f "$APP.zip"
 
 echo "Creating DMG..."
 DMG="$APP.dmg"
-DMG_TMP="$APP-tmp.dmg"
-STAGING=$(mktemp -d)
-MOUNT_DIR=$(mktemp -d)
 
-cp -R "$APP.app" "$STAGING/"
-ln -s /Applications "$STAGING/Applications"
+if ! command -v create-dmg &>/dev/null; then
+    echo "Error: create-dmg not found. Run: brew install create-dmg" && exit 1
+fi
 
-rm -f "$DMG_TMP" "$DMG"
-hdiutil create -volname "$APP" -srcfolder "$STAGING" -ov -format UDRW "$DMG_TMP"
-hdiutil attach "$DMG_TMP" -mountpoint "$MOUNT_DIR" -nobrowse -quiet
+rm -f "$DMG"
+create-dmg \
+    --volname "$APP" \
+    --volicon "$(pwd)/$BUNDLE/Resources/AppIcon.icns" \
+    --window-pos 400 100 \
+    --window-size 500 300 \
+    --icon-size 100 \
+    --icon "$APP.app" 125 150 \
+    --app-drop-link 375 150 \
+    "$DMG" \
+    "$APP.app"
 
-osascript <<APPLESCRIPT
-tell application "Finder"
-    tell disk "$APP"
-        open
-        delay 2
-        set current view of container window to icon view
-        set toolbar visible of container window to false
-        set statusbar visible of container window to false
-        set bounds of container window to {400, 100, 900, 400}
-        set icon size of icon view options of container window to 100
-        set arrangement of icon view options of container window to not arranged
-        delay 1
-        repeat with i in (get every item of container window)
-            if name of i is "$APP.app" then
-                set position of i to {125, 150}
-            end if
-            if name of i is "Applications" then
-                set position of i to {375, 150}
-            end if
-        end repeat
-        close
-        open
-        update without registering applications
-    end tell
-end tell
-APPLESCRIPT
+echo "Signing DMG..."
+codesign --sign "$APPLE_SIGN_IDENTITY" "$DMG"
 
-sync
-hdiutil detach "$MOUNT_DIR" -quiet
-hdiutil convert "$DMG_TMP" -format UDZO -o "$DMG"
-rm -f "$DMG_TMP"
-rm -rf "$STAGING"
+echo "Notarizing DMG (1–5 min)..."
+xcrun notarytool submit "$DMG" \
+    --apple-id "$APPLE_ID" \
+    --team-id "$APPLE_TEAM_ID" \
+    --password "$APPLE_APP_PASSWORD" \
+    --wait
+
+echo "Stapling DMG..."
+xcrun stapler staple "$DMG"
 
 echo ""
 echo "Done. $DMG is signed, notarized, and ready to distribute."
