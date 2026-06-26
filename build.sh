@@ -20,7 +20,11 @@ swiftc \
     -sdk "$SDK" \
     Sources/main.swift \
     Sources/AppDelegate.swift \
+    Sources/BallSettings.swift \
+    Sources/HotkeyManager.swift \
+    Sources/SettingsWindowController.swift \
     Sources/BallView.swift \
+    -framework Carbon \
     -o "$BUNDLE/MacOS/$APP"
 
 cp Info.plist "$BUNDLE/Info.plist"

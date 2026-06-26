@@ -14,24 +14,16 @@ final class BallView: NSView {
         }
     }
 
-    // MARK: - Config
+    // MARK: - Fixed constants
 
-    private let segCount    = 16
-    private let totalLen:   CGFloat = 220
-    private let grav:       CGFloat = 700
-    private let damping:    CGFloat = 0.9994   // per-frame position-delta decay
-    private let iters               = 10       // constraint iterations
-    private let breakSpeed: CGFloat = 1600     // px/s throw to snap rope
-    private let breakRatio: CGFloat = 1.52     // dist-from-anchor / totalLen to snap rope
-    private let bounceE:    CGFloat = 0.65
-    private let floorFric:  CGFloat = 0.80
-
-    let ballRadius: CGFloat = 28
+    private let iters       = 10
+    private let breakSpeed: CGFloat = 1600
+    private let breakRatio: CGFloat = 1.52
     let anchor: CGPoint
 
     // MARK: - State
 
-    private var parts: [Particle] = []
+    private var parts:  [Particle] = []
     private var segLen: CGFloat = 0
 
     private var isFree  = false
@@ -51,15 +43,29 @@ final class BallView: NSView {
         self.anchor = anchor
         super.init(frame: frame)
         buildChain()
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(settingsChanged),
+            name: BallSettings.changed,
+            object: nil)
     }
 
     required init?(coder: NSCoder) { fatalError() }
-    deinit { animationLink?.invalidate() }
+
+    deinit {
+        animationLink?.invalidate()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func settingsChanged() {
+        resetRope()
+        needsDisplay = true
+    }
 
     private func buildChain() {
-        segLen = totalLen / CGFloat(segCount)
-        parts = (0...segCount).map { i in
-            let y = anchor.y - totalLen * CGFloat(i) / CGFloat(segCount)
+        let s = BallSettings.shared
+        segLen = s.ropeLength / CGFloat(s.segCount)
+        parts = (0...s.segCount).map { i in
+            let y = anchor.y - s.ropeLength * CGFloat(i) / CGFloat(s.segCount)
             return Particle(CGPoint(x: anchor.x, y: y), pinned: i == 0)
         }
     }
@@ -89,19 +95,19 @@ final class BallView: NSView {
     // MARK: - Rope physics (Verlet + constraints)
 
     private func stepChain(dt: CGFloat) {
+        let s = BallSettings.shared
         let n = parts.count
         for i in 1..<n {
             if dragging && i == n - 1 { continue }
-            let vx = (parts[i].pos.x - parts[i].oldPos.x) * damping
-            let vy = (parts[i].pos.y - parts[i].oldPos.y) * damping
+            let vx = (parts[i].pos.x - parts[i].oldPos.x) * s.damping
+            let vy = (parts[i].pos.y - parts[i].oldPos.y) * s.damping
             let old = parts[i].pos
             parts[i].pos.x += vx
-            parts[i].pos.y += vy - grav * dt * dt
+            parts[i].pos.y += vy - s.gravity * dt * dt
             parts[i].oldPos = old
         }
-
         for _ in 0..<iters {
-            for i in 0..<segCount { satisfyConstraint(i, i + 1) }
+            for i in 0..<(n - 1) { satisfyConstraint(i, i + 1) }
         }
     }
 
@@ -129,17 +135,19 @@ final class BallView: NSView {
 
     private func stepFree(dt: CGFloat) {
         if freeDragging { return }
-        freeVel.y -= grav * dt
+        let s = BallSettings.shared
+        freeVel.y -= s.gravity * dt
         freePos.x += freeVel.x * dt
         freePos.y += freeVel.y * dt
         let b = bounds
-        if freePos.x - ballRadius < b.minX { freePos.x = b.minX + ballRadius; freeVel.x =  abs(freeVel.x) * bounceE }
-        if freePos.x + ballRadius > b.maxX { freePos.x = b.maxX - ballRadius; freeVel.x = -abs(freeVel.x) * bounceE }
-        if freePos.y + ballRadius > b.maxY { freePos.y = b.maxY - ballRadius; freeVel.y = -abs(freeVel.y) * bounceE }
-        if freePos.y - ballRadius < b.minY {
-            freePos.y = b.minY + ballRadius
-            freeVel.y = abs(freeVel.y) * bounceE
-            freeVel.x *= floorFric
+        let r = s.ballRadius
+        if freePos.x - r < b.minX { freePos.x = b.minX + r; freeVel.x =  abs(freeVel.x) * s.bounceE }
+        if freePos.x + r > b.maxX { freePos.x = b.maxX - r; freeVel.x = -abs(freeVel.x) * s.bounceE }
+        if freePos.y + r > b.maxY { freePos.y = b.maxY - r; freeVel.y = -abs(freeVel.y) * s.bounceE }
+        if freePos.y - r < b.minY {
+            freePos.y = b.minY + r
+            freeVel.y = abs(freeVel.y) * s.bounceE
+            freeVel.x *= s.floorFric
         }
     }
 
@@ -168,9 +176,9 @@ final class BallView: NSView {
 
     private func drawRope(_ ctx: CGContext) {
         guard parts.count >= 2 else { return }
+        let s = BallSettings.shared
         let pts = parts.map(\.pos)
 
-        // Catmull-Rom bezier through chain points
         func makePath(ox: CGFloat, oy: CGFloat) -> CGPath {
             let path = CGMutablePath()
             path.move(to: CGPoint(x: pts[0].x + ox, y: pts[0].y + oy))
@@ -188,52 +196,50 @@ final class BallView: NSView {
             return path
         }
 
+        let thickness = s.ropeThickness
         ctx.setLineCap(.round)
 
-        // Shadow
         ctx.addPath(makePath(ox: 2, oy: -3))
         ctx.setStrokeColor(NSColor.black.withAlphaComponent(0.13).cgColor)
-        ctx.setLineWidth(3.5); ctx.strokePath()
+        ctx.setLineWidth(thickness + 1); ctx.strokePath()
 
-        // Rope body
         ctx.addPath(makePath(ox: 0, oy: 0))
-        ctx.setStrokeColor(NSColor(white: 0.80, alpha: 0.92).cgColor)
-        ctx.setLineWidth(2.5); ctx.strokePath()
+        ctx.setStrokeColor(s.ropeColor.cgColor)
+        ctx.setLineWidth(thickness); ctx.strokePath()
 
-        // Anchor pin
         let pr: CGFloat = 5
         ctx.setFillColor(NSColor(white: 0.95, alpha: 1).cgColor)
         ctx.fillEllipse(in: CGRect(x: anchor.x - pr, y: anchor.y - pr, width: pr*2, height: pr*2))
     }
 
     private func drawBall(_ ctx: CGContext, at pos: CGPoint) {
-        let r = ballRadius
+        let s  = BallSettings.shared
+        let r  = s.ballRadius
         let rect = CGRect(x: pos.x - r, y: pos.y - r, width: r*2, height: r*2)
+
+        let (highlight, mid, deep, shadowColor) = ballGradientColors(s.ballColor)
 
         // Drop shadow
         ctx.saveGState()
-        ctx.setShadow(offset: CGSize(width: 4, height: -7), blur: 18,
-                      color: NSColor.black.withAlphaComponent(0.52).cgColor)
-        ctx.setFillColor(NSColor(red: 0.04, green: 0.14, blue: 0.65, alpha: 1).cgColor)
+        ctx.setShadow(offset: CGSize(width: 4, height: -7), blur: 18, color: shadowColor)
+        ctx.setFillColor(deep)
         ctx.fillEllipse(in: rect)
         ctx.restoreGState()
 
-        // Sphere — radial gradient, highlight offset upper-left for 3-D illusion
+        // Sphere radial gradient
         ctx.saveGState()
         ctx.addEllipse(in: rect); ctx.clip()
         let cs = CGColorSpaceCreateDeviceRGB()
-        let sphereGrad = CGGradient(colorsSpace: cs, colors: [
-            NSColor(red: 0.90, green: 0.95, blue: 1.00, alpha: 1).cgColor,
-            NSColor(red: 0.28, green: 0.55, blue: 0.98, alpha: 1).cgColor,
-            NSColor(red: 0.03, green: 0.12, blue: 0.62, alpha: 1).cgColor,
-        ] as CFArray, locations: [0, 0.42, 1.0])!
+        let sphereGrad = CGGradient(colorsSpace: cs,
+            colors: [highlight, mid, deep] as CFArray,
+            locations: [0, 0.42, 1.0])!
         ctx.drawRadialGradient(sphereGrad,
             startCenter: CGPoint(x: pos.x - r*0.28, y: pos.y + r*0.30), startRadius: 0,
             endCenter:   CGPoint(x: pos.x + r*0.05, y: pos.y - r*0.05), endRadius: r*1.05,
             options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
         ctx.restoreGState()
 
-        // Rim highlight ring (2px wide)
+        // Rim highlight ring
         ctx.saveGState()
         ctx.addEllipse(in: rect)
         ctx.addEllipse(in: rect.insetBy(dx: 2, dy: 2))
@@ -256,11 +262,25 @@ final class BallView: NSView {
         ctx.fillEllipse(in: CGRect(x: pos.x - r*0.37, y: pos.y + r*0.30, width: r*0.24, height: r*0.15))
     }
 
-    // MARK: - Hit testing (click-through outside ball)
+    private func ballGradientColors(_ color: NSColor) -> (highlight: CGColor, mid: CGColor, deep: CGColor, shadow: CGColor) {
+        let rgb = color.usingColorSpace(.deviceRGB) ?? color
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        rgb.getRed(&r, green: &g, blue: &b, alpha: &a)
+
+        let highlight = NSColor(red: min(1, r*0.25 + 0.75),
+                                green: min(1, g*0.25 + 0.75),
+                                blue:  min(1, b*0.25 + 0.75), alpha: 1).cgColor
+        let mid  = rgb.cgColor
+        let deep = NSColor(red: r*0.18, green: g*0.18, blue: b*0.18 + (b > 0.3 ? 0.12 : 0), alpha: 1).cgColor
+        let shadow = NSColor.black.withAlphaComponent(0.52).cgColor
+        return (highlight, mid, deep, shadow)
+    }
+
+    // MARK: - Hit testing
 
     override func hitTest(_ point: NSPoint) -> NSView? {
         let pos = isFree ? freePos : (parts.last?.pos ?? .zero)
-        return hypot(point.x - pos.x, point.y - pos.y) <= ballRadius + 12 ? self : nil
+        return hypot(point.x - pos.x, point.y - pos.y) <= BallSettings.shared.ballRadius + 12 ? self : nil
     }
 
     // MARK: - Mouse
@@ -268,7 +288,7 @@ final class BallView: NSView {
     override func mouseDown(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
         let pos = isFree ? freePos : (parts.last?.pos ?? .zero)
-        guard hypot(p.x - pos.x, p.y - pos.y) <= ballRadius + 12 else { return }
+        guard hypot(p.x - pos.x, p.y - pos.y) <= BallSettings.shared.ballRadius + 12 else { return }
         if isFree {
             freeDragging = true
             dragSamples = [(p, CACurrentMediaTime())]
@@ -296,7 +316,7 @@ final class BallView: NSView {
         dragSamples.append((p, CACurrentMediaTime()))
         if dragSamples.count > 8 { dragSamples.removeFirst() }
 
-        if hypot(p.x - anchor.x, p.y - anchor.y) > totalLen * breakRatio {
+        if hypot(p.x - anchor.x, p.y - anchor.y) > BallSettings.shared.ropeLength * breakRatio {
             snapRope(vel: recentVelocity(), at: p)
         }
         needsDisplay = true

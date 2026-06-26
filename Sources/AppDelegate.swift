@@ -9,6 +9,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         setupStatusBar()
+        let hk = HotkeyManager.shared
+        hk.onToggle = { [weak self] in self?.toggleBall() }
+        hk.update()
     }
 
     private func setupStatusBar() {
@@ -26,6 +29,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func handleClick(_ sender: NSStatusBarButton) {
         if NSApp.currentEvent?.type == .rightMouseUp {
             let menu = NSMenu()
+            menu.addItem(NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ","))
+            menu.addItem(.separator())
+            menu.addItem(NSMenuItem(title: "Reset Ball", action: #selector(resetBall), keyEquivalent: "r"))
+            menu.addItem(.separator())
             menu.addItem(NSMenuItem(title: "Quit FidgetBall", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
@@ -35,13 +42,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func toggleBall() {
-        if isShowing {
-            overlayPanel?.orderOut(nil)
-            isShowing = false
-        } else {
-            showBall()
-        }
+    @objc private func openSettings() {
+        dismissBall()
+        SettingsWindowController.shared.show()
+    }
+
+    @objc private func resetBall() {
+        ballView?.resetRope()
+    }
+
+    func toggleBall() {
+        if isShowing { dismissBall() } else { showBall() }
+    }
+
+    func dismissBall() {
+        overlayPanel?.orderOut(nil)
+        isShowing = false
     }
 
     private func showBall() {
