@@ -14,7 +14,7 @@ final class BallSettings {
     // MARK: - Visual
 
     var ballRadius: CGFloat {
-        get { ud.optDouble("ballRadius").map { CGFloat($0) } ?? 32 }
+        get { ud.optDouble("ballRadius").map { CGFloat($0) } ?? 26 }
         set { ud.set(Double(newValue), forKey: "ballRadius"); post() }
     }
 
@@ -61,7 +61,7 @@ final class BallSettings {
     }
 
     var ropeElasticity: CGFloat {
-        get { ud.optDouble("ropeElasticity").map { CGFloat($0) } ?? 0.80 }
+        get { ud.optDouble("ropeElasticity").map { CGFloat($0) } ?? 0.45 }
         set { ud.set(Double(newValue), forKey: "ropeElasticity"); post() }
     }
 
