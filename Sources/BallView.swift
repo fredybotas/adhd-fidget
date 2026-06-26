@@ -19,7 +19,8 @@ final class BallView: NSView {
     private let iters       = 10
     private let breakSpeed: CGFloat = 1600
     private let breakRatio: CGFloat = 1.52
-    let anchor: CGPoint
+    var anchor: CGPoint
+    var anchorProvider: (() -> CGPoint)?
 
     // MARK: - State
 
@@ -88,6 +89,12 @@ final class BallView: NSView {
         if lastTime == 0 { lastTime = now; return }
         let dt = CGFloat(min(now - lastTime, 1.0 / 30.0))
         lastTime = now
+        if let newAnchor = anchorProvider?() {
+            anchor = newAnchor
+            if !isFree && !parts.isEmpty {
+                parts[0].pos = anchor
+            }
+        }
         if isFree { stepFree(dt: dt) } else { stepChain(dt: dt) }
         needsDisplay = true
     }

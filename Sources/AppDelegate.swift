@@ -79,6 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             let anchor = anchorPoint(on: screen)
             let view = BallView(frame: screen.frame, anchor: anchor)
+            view.anchorProvider = { [weak self] in self?.anchorPoint(on: screen) ?? anchor }
             panel.contentView = view
             ballView = view
             overlayPanel = panel
