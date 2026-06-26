@@ -15,6 +15,18 @@ echo "Building $APP for $TARGET..."
 rm -rf "$APP.app"
 mkdir -p "$BUNDLE/MacOS" "$BUNDLE/Resources"
 
+# Build app icon from design PNG
+ICONSET="$(mktemp -d)/AppIcon.iconset"
+mkdir -p "$ICONSET"
+PNG="design/adhd-fidget-app-icon.svg.png"
+for size in 16 32 64 128 256 512; do
+  sips -z $size $size "$PNG" --out "$ICONSET/icon_${size}x${size}.png" 2>/dev/null
+  double=$((size * 2))
+  sips -z $double $double "$PNG" --out "$ICONSET/icon_${size}x${size}@2x.png" 2>/dev/null
+done
+iconutil -c icns "$ICONSET" -o "$BUNDLE/Resources/AppIcon.icns"
+rm -rf "$(dirname "$ICONSET")"
+
 swiftc \
     -target "$TARGET" \
     -sdk "$SDK" \
