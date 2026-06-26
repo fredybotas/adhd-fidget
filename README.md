@@ -1,6 +1,6 @@
 # FidgetBall
 
-macOS status bar fidget toy for ADHD focus. A physics-simulated ball hangs from your menu bar on a rope — drag it, throw it, watch it bounce.
+macOS status bar fidget toy for ADHD focus. A physics-simulated ball hangs from your menu bar on a rope — drag it, throw it, watch it bounce. Perfect for those moments waiting for your AI prompt to finish.
 
 ![FidgetBall demo](demo.gif)
 
