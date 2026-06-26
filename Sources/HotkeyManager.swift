@@ -5,8 +5,10 @@ final class HotkeyManager {
     static let shared = HotkeyManager()
 
     var onToggle: (() -> Void)?
+    var onReset: (() -> Void)?
 
     private var showRef: EventHotKeyRef?
+    private var resetRef: EventHotKeyRef?
 
     private init() {
         var spec = EventTypeSpec(
@@ -28,6 +30,7 @@ final class HotkeyManager {
                                       UnsafeMutableRawPointer($0))
                 }
                 if hkID.id == 1 { HotkeyManager.shared.onToggle?() }
+                if hkID.id == 2 { HotkeyManager.shared.onReset?() }
                 return noErr
             },
             1, &spec, nil, nil
@@ -35,13 +38,20 @@ final class HotkeyManager {
     }
 
     func update() {
-        if let r = showRef { UnregisterEventHotKey(r) }; showRef = nil
+        if let r = showRef  { UnregisterEventHotKey(r) }; showRef  = nil
+        if let r = resetRef { UnregisterEventHotKey(r) }; resetRef = nil
 
         let s = BallSettings.shared
-        guard s.showKeyCode >= 0 else { return }
-        let id = EventHotKeyID(signature: 0x46424C4C, id: 1)
-        RegisterEventHotKey(UInt32(s.showKeyCode), carbonMods(s.showModifiers),
-                            id, GetApplicationEventTarget(), 0, &showRef)
+        if s.showKeyCode >= 0 {
+            let id = EventHotKeyID(signature: 0x46424C4C, id: 1)
+            RegisterEventHotKey(UInt32(s.showKeyCode), carbonMods(s.showModifiers),
+                                id, GetApplicationEventTarget(), 0, &showRef)
+        }
+        if s.resetKeyCode >= 0 {
+            let id = EventHotKeyID(signature: 0x46424C4C, id: 2)
+            RegisterEventHotKey(UInt32(s.resetKeyCode), carbonMods(s.resetModifiers),
+                                id, GetApplicationEventTarget(), 0, &resetRef)
+        }
     }
 }
 

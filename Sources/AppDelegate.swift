@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusBar()
         let hk = HotkeyManager.shared
         hk.onToggle = { [weak self] in self?.toggleBall() }
+        hk.onReset  = { [weak self] in self?.resetBall() }
         hk.update()
     }
 

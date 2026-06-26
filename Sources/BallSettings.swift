@@ -80,12 +80,26 @@ final class BallSettings {
         set { ud.set(newValue, forKey: "showLabel"); post() }
     }
 
+    var resetKeyCode: Int {
+        get { ud.object(forKey: "resetKeyCode") == nil ? -1 : ud.integer(forKey: "resetKeyCode") }
+        set { ud.set(newValue, forKey: "resetKeyCode"); post() }
+    }
+    var resetModifiers: NSEvent.ModifierFlags {
+        get { NSEvent.ModifierFlags(rawValue: UInt(ud.integer(forKey: "resetModifiers"))) }
+        set { ud.set(Int(newValue.rawValue), forKey: "resetModifiers"); post() }
+    }
+    var resetLabel: String {
+        get { ud.string(forKey: "resetLabel") ?? "" }
+        set { ud.set(newValue, forKey: "resetLabel"); post() }
+    }
+
     // MARK: - Reset
 
     func reset() {
         ["ballRadius", "ballColor", "ropeColor", "ropeThickness",
          "gravity", "damping", "bounceE", "floorFric", "ropeLength", "segCount",
-         "showKeyCode", "showModifiers", "showLabel"]
+         "showKeyCode", "showModifiers", "showLabel",
+         "resetKeyCode", "resetModifiers", "resetLabel"]
             .forEach { ud.removeObject(forKey: $0) }
         post()
     }

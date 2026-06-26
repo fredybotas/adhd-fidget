@@ -7,7 +7,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     private init() {
         let w = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 510),
+            contentRect: NSRect(x: 0, y: 0, width: 440, height: 580),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -69,6 +69,10 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
                                     currentLabel: s.showLabel,
                                     onSave: { BallSettings.shared.showKeyCode = $0; BallSettings.shared.showModifiers = $1; BallSettings.shared.showLabel = $2; HotkeyManager.shared.update() },
                                     onClear: { BallSettings.shared.showKeyCode = -1; BallSettings.shared.showLabel = ""; HotkeyManager.shared.update() }), 6))
+        allRows.append((shortcutRow("Reset Ball",
+                                    currentLabel: s.resetLabel,
+                                    onSave: { BallSettings.shared.resetKeyCode = $0; BallSettings.shared.resetModifiers = $1; BallSettings.shared.resetLabel = $2; HotkeyManager.shared.update() },
+                                    onClear: { BallSettings.shared.resetKeyCode = -1; BallSettings.shared.resetLabel = ""; HotkeyManager.shared.update() }), 4))
 
         let btn = NSButton(title: "Reset to Defaults", target: self, action: #selector(reset))
         btn.bezelStyle = .rounded
