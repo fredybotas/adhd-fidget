@@ -80,6 +80,13 @@ final class BallSettings {
         set { ud.set(newValue, forKey: "segCount"); post() }
     }
 
+    // MARK: - Interaction
+
+    var tapAnywhereToMove: Bool {
+        get { ud.object(forKey: "tapAnywhereToMove") == nil ? true : ud.bool(forKey: "tapAnywhereToMove") }
+        set { ud.set(newValue, forKey: "tapAnywhereToMove"); post() }
+    }
+
     // MARK: - Shortcuts
 
     var showKeyCode: Int {
@@ -113,6 +120,7 @@ final class BallSettings {
     func reset() {
         ["ballRadius", "ballColor", "ropeColor", "ropeThickness",
          "gravity", "damping", "bounceE", "floorFric", "ropeLength", "ropeElasticity", "breakSpeed", "breakRatio", "segCount",
+         "tapAnywhereToMove",
          "showKeyCode", "showModifiers", "showLabel",
          "resetKeyCode", "resetModifiers", "resetLabel"]
             .forEach { ud.removeObject(forKey: $0) }

@@ -285,6 +285,7 @@ final class BallView: NSView {
     // MARK: - Hit testing
 
     override func hitTest(_ point: NSPoint) -> NSView? {
+        if BallSettings.shared.tapAnywhereToMove { return self }
         let pos = isFree ? freePos : (parts.last?.pos ?? .zero)
         return hypot(point.x - pos.x, point.y - pos.y) <= BallSettings.shared.ballRadius + 12 ? self : nil
     }
@@ -293,13 +294,20 @@ final class BallView: NSView {
 
     override func mouseDown(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
-        let pos = isFree ? freePos : (parts.last?.pos ?? .zero)
-        guard hypot(p.x - pos.x, p.y - pos.y) <= BallSettings.shared.ballRadius + 12 else { return }
+        let s = BallSettings.shared
+        if !s.tapAnywhereToMove {
+            let pos = isFree ? freePos : (parts.last?.pos ?? .zero)
+            guard hypot(p.x - pos.x, p.y - pos.y) <= s.ballRadius + 12 else { return }
+        }
         if isFree {
+            freePos = p
             freeDragging = true
             dragSamples = [(p, CACurrentMediaTime())]
             return
         }
+        let last = parts.count - 1
+        parts[last].pos = p
+        parts[last].oldPos = p
         dragging = true
         dragSamples = [(p, CACurrentMediaTime())]
     }

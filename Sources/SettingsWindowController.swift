@@ -67,6 +67,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         allRows.append((sliderRow("Stretch Limit",min: 1.1, max: 6.0,   value: Double(s.breakRatio),     format: "%.1f×")   { BallSettings.shared.breakRatio     = CGFloat($0) }, 4))
         allRows.append((sliderRow("Segments",     min: 4,  max: 32,     value: Double(s.segCount), integer: true, format: "%.0f") { BallSettings.shared.segCount = Int($0) }, 4))
 
+        allRows.append((header("INTERACTION"), 18))
+        allRows.append((toggleRow("Tap anywhere to grab ball", value: s.tapAnywhereToMove) { BallSettings.shared.tapAnywhereToMove = $0 }, 6))
+
         allRows.append((header("SHORTCUTS"), 18))
         allRows.append((shortcutRow("Show / Hide",
                                     currentLabel: s.showLabel,
@@ -200,6 +203,29 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         return row
     }
 
+    private func toggleRow(_ label: String, value: Bool,
+                            onChange: @escaping (Bool) -> Void) -> NSView {
+        let row = NSView()
+        row.heightAnchor.constraint(equalToConstant: 26).isActive = true
+
+        let checkbox = NSButton(checkboxWithTitle: label, target: nil, action: nil)
+        checkbox.state = value ? .on : .off
+        checkbox.font = .systemFont(ofSize: 13)
+
+        let t = ToggleTarget(onChange: onChange)
+        checkbox.target = t
+        checkbox.action = #selector(ToggleTarget.changed(_:))
+        retained.append(t)
+
+        row.addSubview(checkbox)
+        checkbox.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            checkbox.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            checkbox.leadingAnchor.constraint(equalTo: row.leadingAnchor),
+        ])
+        return row
+    }
+
     private func shortcutRow(_ label: String, currentLabel: String,
                               onSave: @escaping (Int, NSEvent.ModifierFlags, String) -> Void,
                               onClear: @escaping () -> Void) -> NSView {
@@ -249,6 +275,12 @@ private class SliderTarget: NSObject {
         valLbl.stringValue = String(format: format, v)
         onChange(v)
     }
+}
+
+private class ToggleTarget: NSObject {
+    let onChange: (Bool) -> Void
+    init(onChange: @escaping (Bool) -> Void) { self.onChange = onChange }
+    @objc func changed(_ sender: NSButton) { onChange(sender.state == .on) }
 }
 
 private class ColorTarget: NSObject {
